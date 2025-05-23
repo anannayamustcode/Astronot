@@ -4,6 +4,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stars } from "@react-three/drei";
 import { Suspense, useRef, useState } from "react";
 import { useRouter } from "next/navigation"; // Import the router
+
 export default function Home() {
   const [spin, setSpin] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
@@ -42,7 +43,7 @@ export default function Home() {
 
         <OrbitControls enableZoom={false} enablePan={false} />
       </Canvas>
-      <div className="absolute bottom-6 right-6 z-30 cursor-pointer">
+      <div className="absolute bottom-6 right-9 z-30 cursor-pointer">
   <div
     className={`chest-container ${isChestOpen ? "open" : ""}`}
     onClick={() => setIsChestOpen(!isChestOpen)}
@@ -53,31 +54,33 @@ export default function Home() {
   <>
     {/* Glow behind menu */}
     <div className="golden-dust" />
-    <div className="absolute top-[-160%] left-1/2 transform -translate-x-1/2 space-y-2 text-center z-10">
-      <p
-        className="text-white font-bold text-x floating-text cursor-pointer"
-        onClick={() => router.push("/destination")}
-      >
-        Fireworks
-      </p>
-      <p
-        className="text-white font-bold text-x floating-text cursor-pointer"
-        onClick={() => router.push("/stargazing")}
-      >
-        Stargazing
-      </p>
-      <p
-        className="text-white font-bold text-x floating-text cursor-pointer"
-        onClick={() => router.push("/deadpoetssociety")}
-      >
-        DeadPoetsSociety
-      </p>
+    <div className="absolute top-[-140%] left-1/2 transform -translate-x-1/2 space-y-2 text-center z-10">
+
       <p
         className="text-white font-bold text-x floating-text cursor-pointer"
         onClick={() => router.push("/fire")}
       >
         Bonfire
       </p>
+      <p
+        className="text-white font-bold text-x floating-text cursor-pointer"
+        onClick={() => router.push("/stargazing")}
+      >
+      Memory wall
+      </p>
+      <p
+        className="text-white font-bold text-x floating-text cursor-pointer"
+        onClick={() => router.push("/destination")}
+      >
+        Fireworks
+      </p>
+      {/* <p
+        className="text-white font-bold text-x floating-text cursor-pointer"
+        onClick={() => router.push("/deadpoetssociety")}
+      >
+        DeadPoetsSociety
+      </p> */}
+
     </div>
   </>
 )}
