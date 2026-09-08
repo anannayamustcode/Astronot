@@ -1,10 +1,12 @@
+import { FrameData } from "./useFrameStore";
+
 type Props = {
   index: number;
-  setFrames: React.Dispatch<React.SetStateAction<any[]>>;
+  setFrames: React.Dispatch<React.SetStateAction<FrameData[]>>;
 };
 
 export default function ImageControls({ index, setFrames }: Props) {
-  const update = (cb: (frame: any) => any) => {
+  const update = (cb: (frame: FrameData) => FrameData) => {
     setFrames(prev => prev.map((f, i) => (i === index ? cb(f) : f)));
   };
 

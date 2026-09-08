@@ -288,21 +288,15 @@ function FireParticles({ position }: { position: [number, number, number] }) {
       <bufferGeometry>
         <bufferAttribute 
           attach="attributes-position" 
-          count={count} 
-          array={positionsArray} 
-          itemSize={3} 
+          args={[positionsArray, 3]} 
         />
         <bufferAttribute 
           attach="attributes-color" 
-          count={count} 
-          array={colorsArray} 
-          itemSize={3} 
+          args={[colorsArray, 3]} 
         />
         <bufferAttribute
           attach="attributes-size"
-          count={count}
-          array={sizesArray}
-          itemSize={1}
+          args={[sizesArray, 1]}
         />
       </bufferGeometry>
       <pointsMaterial 

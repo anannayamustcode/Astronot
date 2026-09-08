@@ -5,10 +5,10 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useRef, useMemo, useState, useEffect } from "react";
 import * as THREE from "three";
-import { OrbitControls, Stars, useTexture, Cloud, Environment } from "@react-three/drei";
+import { OrbitControls, Stars, Cloud, Environment } from "@react-three/drei";
 
 // Firelight flicker effect hook
-function useFirelight(intensity = 2, speed = 1) {
+function useFirelight(intensity = 2) {
   const [light, setLight] = useState(intensity);
   
   useFrame(() => {
@@ -21,13 +21,13 @@ function useFirelight(intensity = 2, speed = 1) {
 
 // Animated fire component with particles and glowing core
 function Fire() {
-  const fireRef = useRef();
-  const fireIntensity = useFirelight(3, 1.5);
-  const pointLightRef = useRef();
+  const fireRef = useRef<THREE.Group>(null);
+  const fireIntensity = useFirelight(3);
+  const pointLightRef = useRef<THREE.PointLight>(null);
   
   // Core fire geometry
   const CoreFire = () => {
-    const ref = useRef();
+    const ref = useRef<THREE.Mesh>(null);
     
     useFrame(({ clock }) => {
       if (ref.current) {
@@ -47,7 +47,7 @@ function Fire() {
   
   // Ember particles that float upward
   const FireParticles = () => {
-    const particlesRef = useRef();
+    const particlesRef = useRef<THREE.Points>(null);
     const count = 200;
     
     // Initial particle positions
@@ -126,21 +126,15 @@ function Fire() {
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
-            count={count}
-            array={positions}
-            itemSize={3}
+            args={[positions, 3]}
           />
           <bufferAttribute
             attach="attributes-color"
-            count={count}
-            array={colors}
-            itemSize={3}
+            args={[colors, 3]}
           />
           <bufferAttribute
             attach="attributes-size"
-            count={count}
-            array={sizes}
-            itemSize={1}
+            args={[sizes, 1]}
           />
         </bufferGeometry>
         <pointsMaterial
@@ -157,7 +151,7 @@ function Fire() {
   
   // Smoke particles rising from fire
   const SmokeParticles = () => {
-    const smokeRef = useRef();
+    const smokeRef = useRef<THREE.Points>(null);
     const count = 50;
     
     const positions = useMemo(() => {
@@ -191,7 +185,7 @@ function Fire() {
       
       const positions = smokeRef.current.geometry.attributes.position;
       const sizes = smokeRef.current.geometry.attributes.size;
-      const opacities = smokeRef.current.userData.opacities;
+      const opacities = (smokeRef.current.userData as { opacities: Float32Array }).opacities;
       
       for (let i = 0; i < count; i++) {
         // Update position - slower rise than fire particles
@@ -220,7 +214,7 @@ function Fire() {
       
       // Update material opacity for each particle
       if (smokeRef.current.material) {
-        smokeRef.current.material.opacity = 0.3;
+        (smokeRef.current.material as THREE.PointsMaterial).opacity = 0.3;
       }
     });
     
@@ -229,15 +223,11 @@ function Fire() {
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
-            count={count}
-            array={positions}
-            itemSize={3}
+            args={[positions, 3]}
           />
           <bufferAttribute
             attach="attributes-size"
-            count={count}
-            array={sizes}
-            itemSize={1}
+            args={[sizes, 1]}
           />
         </bufferGeometry>
         <pointsMaterial
@@ -305,7 +295,7 @@ function Logs() {
 //   );
 // }
 
-function Log({ position, rotation, scale = [1, 1, 1] }) {
+function Log({ position, rotation, scale = [1, 1, 1] }: { position: [number, number, number]; rotation: [number, number, number]; scale?: [number, number, number] }) {
   return (
     <mesh position={position} rotation={rotation} scale={scale} castShadow>
       <cylinderGeometry args={[0.1, 0.12, 2, 8]} />
@@ -342,26 +332,7 @@ function FireRing() {
   );
 }
 
-// Ground with grass texture
-// function Ground() {
-//   const grassTexture = useTexture("/api/placeholder/400/400");
-  
-//   return (
-//     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
-//       <planeGeometry args={[100, 100, 32, 32]} />
-//       <meshStandardMaterial 
-//         map={grassTexture}
-//         color="#1a2e1a" 
-//         roughness={0.9}
-//         metalness={0.1}
-//         displacementScale={0.1}
-//       />
-//     </mesh>
-//   );
-// }
-
 function Ground() {
-  // Option 1: Use a solid color instead of texture
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
       <planeGeometry args={[100, 100, 32, 32]} />
@@ -375,7 +346,7 @@ function Ground() {
 }
 // Soft moss patches around the campfire
 function MossPatches() {
-  const patchPositions = [
+  const patchPositions: [number, number, number][] = [
     [1.2, 0.01, 0.8],
     [-1.0, 0.01, 1.2],
     [0.7, 0.01, -1.5],
@@ -395,13 +366,24 @@ function MossPatches() {
   );
 }
 
-// Tree with detailed trunk and leaves
-// Tree with detailed trunk and leaves
-function Tree({ position, scale = 1, treeType = "pine" }) {
-  const trunkRef = useRef();
-  const leavesRef = useRef();
+interface TreeConfig {
+  trunkHeight: number;
+  trunkRadius: number;
+  leavesHeight?: number;
+  leavesBottomRadius?: number;
+  leavesTopRadius?: number;
+  leavesRadius?: number;
+  leavesColor: string;
+  trunkColor?: string;
+  segments: number;
+}
 
-  const treeTypes = {
+// Tree with detailed trunk and leaves
+function Tree({ position, scale = 1, treeType = "pine" }: { position: [number, number, number]; scale?: number; treeType?: string }) {
+  const trunkRef = useRef<THREE.Mesh>(null);
+  const leavesRef = useRef<THREE.Group>(null);
+
+  const treeTypes: Record<string, TreeConfig> = {
     pine: {
       trunkHeight: 1.5 * scale,
       trunkRadius: 0.1 * scale,
@@ -440,17 +422,15 @@ function Tree({ position, scale = 1, treeType = "pine" }) {
   });
   
   if (treeType === "pine") {
-    const { trunkHeight, trunkRadius, leavesHeight, leavesBottomRadius, leavesTopRadius, leavesColor, segments } = treeTypes.pine;
+    const { trunkHeight, trunkRadius, leavesHeight = 3, leavesBottomRadius = 1.2, leavesColor, segments } = treeTypes.pine;
     
     return (
       <group position={position}>
-        {/* Trunk positioned at half its height from ground */}
         <mesh ref={trunkRef} position={[0, trunkHeight / 2, 0]} castShadow>
           <cylinderGeometry args={[trunkRadius, trunkRadius * 1.2, trunkHeight, segments]} />
           <meshStandardMaterial color="#5c3c28" roughness={0.9} />
         </mesh>
         
-        {/* Leaves positioned at the top of the trunk */}
         <group ref={leavesRef} position={[0, trunkHeight, 0]}>
           <mesh position={[0, leavesHeight / 2, 0]} castShadow>
             <coneGeometry args={[leavesBottomRadius, leavesHeight, segments]} />
@@ -472,13 +452,11 @@ function Tree({ position, scale = 1, treeType = "pine" }) {
     
     return (
       <group position={position}>
-        {/* Trunk positioned at half its height from ground */}
         <mesh ref={trunkRef} position={[0, trunkHeight / 2, 0]} castShadow>
           <cylinderGeometry args={[trunkRadius, trunkRadius * 1.3, trunkHeight, segments]} />
           <meshStandardMaterial color="#4b3621" roughness={0.9} />
         </mesh>
         
-        {/* Leaves positioned at the top of the trunk */}
         <group ref={leavesRef} position={[0, trunkHeight, 0]}>
           <mesh castShadow>
             <sphereGeometry args={[leavesRadius, segments, segments]} />
@@ -487,18 +465,16 @@ function Tree({ position, scale = 1, treeType = "pine" }) {
         </group>
       </group>
     );
-  } else { // birch
-    const { trunkHeight, trunkRadius, leavesHeight, leavesRadius, leavesColor, trunkColor, segments } = treeTypes.birch;
+  } else {
+    const { trunkHeight, trunkRadius, leavesRadius, leavesColor, trunkColor, segments } = treeTypes.birch;
     
     return (
       <group position={position}>
-        {/* Trunk positioned at half its height from ground */}
         <mesh ref={trunkRef} position={[0, trunkHeight / 2, 0]} castShadow>
           <cylinderGeometry args={[trunkRadius, trunkRadius * 1.2, trunkHeight, segments]} />
           <meshStandardMaterial color={trunkColor || "#e0e0e0"} roughness={0.8} />
         </mesh>
         
-        {/* Leaves positioned at the top of the trunk */}
         <group ref={leavesRef} position={[0, trunkHeight, 0]}>
           <mesh castShadow>
             <sphereGeometry args={[leavesRadius, segments, segments]} />
@@ -508,10 +484,11 @@ function Tree({ position, scale = 1, treeType = "pine" }) {
       </group>
     );
   }
-}// Forest of trees surrounding the campfire
+}
+
+// Forest of trees surrounding the campfire
 function Forest() {
-  // Create trees in concentric circles
-  const trees = [];
+  const trees: { position: [number, number, number]; scale: number; type: string }[] = [];
   
   // Inner circle of trees
   const innerCircleCount = 8;
@@ -574,21 +551,21 @@ function Forest() {
 // Small details and vegetation to enhance realism
 function ForestDetails() {
   // Mushrooms
-  const mushroomPositions = Array.from({ length: 12 }, () => [
+  const mushroomPositions: [number, number, number][] = Array.from({ length: 12 }, () => [
     (Math.random() - 0.5) * 6,
     0.02,
     (Math.random() - 0.5) * 6
   ]);
   
   // Fallen logs
-  const fallenLogPositions = [
+  const fallenLogPositions: { pos: [number, number, number]; rot: [number, number, number]; scale: [number, number, number] }[] = [
     { pos: [3, 0.2, 2], rot: [0.1, Math.PI / 3, 0.1], scale: [1, 0.7, 0.7] },
     { pos: [-4, 0.15, -3], rot: [0.05, -Math.PI / 5, 0], scale: [1.2, 0.6, 0.6] },
     { pos: [2, 0.12, -5], rot: [0, Math.PI / 2.5, 0.08], scale: [0.9, 0.5, 0.5] }
   ];
   
   // Rocks scattered around
-  const rockPositions = Array.from({ length: 20 }, () => ({
+  const rockPositions: { pos: [number, number, number]; rot: [number, number, number]; scale: number }[] = Array.from({ length: 20 }, () => ({
     pos: [(Math.random() - 0.5) * 15, 0.05, (Math.random() - 0.5) * 15],
     rot: [Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI],
     scale: 0.3 + Math.random() * 0.5
@@ -646,7 +623,7 @@ function ForestDetails() {
 // Small lights like fireflies in the forest
 function Fireflies() {
   const count = 50;
-  const ref = useRef();
+  const ref = useRef<THREE.Points>(null);
   
   const positions = useMemo(() => {
     const arr = new Float32Array(count * 3);
@@ -674,12 +651,10 @@ function Fireflies() {
     const sizes = ref.current.geometry.attributes.size;
     
     for (let i = 0; i < count; i++) {
-      // Gentle floating movement
       positions.array[i * 3 + 0] += Math.sin(time * 0.1 + i) * 0.01;
       positions.array[i * 3 + 1] += Math.cos(time * 0.1 + i) * 0.01;
       positions.array[i * 3 + 2] += Math.sin(time * 0.1 + i + 10) * 0.01;
       
-      // Pulsing glow effect
       sizes.array[i] = (Math.sin(time * 2 + i * 100) * 0.5 + 0.5) * 0.3 + 0.1;
     }
     
@@ -692,15 +667,11 @@ function Fireflies() {
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
-          count={count}
-          array={positions}
-          itemSize={3}
+          args={[positions, 3]}
         />
         <bufferAttribute
           attach="attributes-size"
-          count={count}
-          array={sizes}
-          itemSize={1}
+          args={[sizes, 1]}
         />
       </bufferGeometry>
       <pointsMaterial
@@ -720,7 +691,6 @@ function Fireflies() {
 function NightSky() {
   return (
     <>
-      {/* Distant stars */}
       <Stars 
         radius={100} 
         depth={50} 
@@ -731,7 +701,6 @@ function NightSky() {
         speed={0.5}
       />
       
-      {/* Moon */}
       <mesh position={[40, 30, -50]}>
         <sphereGeometry args={[5, 16, 16]} />
         <meshBasicMaterial color="#fffaf0" toneMapped={false} />
@@ -741,22 +710,16 @@ function NightSky() {
   );
 }
 
-// Post-processing effects for mood enhancement
 function PostProcessing() {
   const { gl, scene, camera } = useThree();
   
   useEffect(() => {
-    // This would be where we'd add post-processing effects
-    // In a real implementation, we would use postprocessing library
-    return () => {
-      // Cleanup 
-    };
+    return () => {};
   }, [gl, scene, camera]);
   
   return null;
 }
 
-// Atmospheric fog for depth
 function AtmosphericFog() {
   const { scene } = useThree();
   
@@ -769,21 +732,16 @@ function AtmosphericFog() {
   
   return null;
 }
-// Sound component for forest ambient sounds
+
 function AmbientSounds() {
   useEffect(() => {
-    // Create placeholders for sounds but don't try to play them
-    // This avoids errors since we don't have actual sound files
     console.log("Ambient sounds would play here in a complete implementation");
-    
-    return () => {
-      // Clean up would happen here
-    };
+    return () => {};
   }, []);
   
   return null;
 }
-// Main scene component putting everything together
+
 function CampfireScene() {
   return (
     <>
@@ -791,26 +749,21 @@ function CampfireScene() {
       <AtmosphericFog />
       <NightSky />
       
-      {/* Main scene elements */}
       <Ground />
       <MossPatches />
       <FireRing />
       <Logs />
       <Fire />
       
-      {/* Surrounding forest */}
       <Forest />
       <ForestDetails />
       <Fireflies />
       
-      {/* Atmosphere */}
-      <Cloud position={[10, 15, -15]} args={[3, 2]} opacity={0.3} speed={0.4} />
-      <Cloud position={[-15, 10, 10]} args={[4, 2]} opacity={0.2} speed={0.3} />
+      <Cloud position={[10, 15, -15]} opacity={0.3} speed={0.4} />
+      <Cloud position={[-15, 10, 10]} opacity={0.2} speed={0.3} />
       
-      {/* Ambient sounds */}
       <AmbientSounds />
       
-      {/* Lighting */}
       <ambientLight intensity={0.6} />
       <PostProcessing />
     </>

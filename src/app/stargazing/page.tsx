@@ -1,9 +1,14 @@
 "use client";
+
+/*
+MEMORY WALL PAGE - COMMENTED OUT CODE
+Uncomment the section below if you wish to restore the Memory Wall functionality.
+
 import { useState, useRef, useEffect } from "react";
 
 const LOCAL_STORAGE_KEY = "frame-data";
 
-export default function Page() {
+export default function MemoryWallPage() {
   const [frames, setFrames] = useState(
     Array.from({ length: 5 }, (_, i) => ({
       x: 100 + i * 150,
@@ -19,14 +24,12 @@ export default function Page() {
   const lastPosition = useRef({ x: 0, y: 0 });
   const isDraggingImage = useRef(false);
   
-  // Load from localStorage
   useEffect(() => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          // Make sure any old saved data has the new properties
           const updatedFrames = parsed.map(frame => ({
             ...frame,
             imagePosition: frame.imagePosition || { x: 0, y: 0 },
@@ -41,13 +44,11 @@ export default function Page() {
     }
   }, []);
 
-  // Save to localStorage on update
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(frames));
   }, [frames]);
 
   const handleMouseDown = (index: number, e: React.MouseEvent) => {
-    // Prevent dragging the frame when adjusting the image
     if ((e.target as HTMLElement).classList.contains('image-control')) {
       return;
     }
@@ -99,7 +100,6 @@ export default function Page() {
     reader.readAsDataURL(file);
   };
 
-  // Image positioning handlers
   const handleImageMouseDown = (index: number, e: React.MouseEvent) => {
     e.stopPropagation();
     isDraggingImage.current = true;
@@ -131,7 +131,6 @@ export default function Page() {
     lastPosition.current = { x: e.clientX, y: e.clientY };
   };
 
-  // Zoom handlers
   const handleZoomIn = (index: number, e: React.MouseEvent) => {
     e.stopPropagation();
     setFrames((prev) =>
@@ -181,7 +180,6 @@ export default function Page() {
           style={{ left: frame.x, top: frame.y }}
           onMouseDown={(e) => handleMouseDown(i, e)}
         >
-          {/* User uploaded image inside frame with position and zoom controls */}
           {frame.image && (
             <div className="absolute inset-0 overflow-hidden rounded-md">
               <img
@@ -199,7 +197,6 @@ export default function Page() {
                 draggable={false}
               />
               
-              {/* Controls that appear on hover */}
               <div className="absolute bottom-2 right-2 flex space-x-1 bg-black bg-opacity-50 rounded-md p-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 <button 
                   className="w-6 h-6 bg-white bg-opacity-70 rounded-md flex items-center justify-center text-black text-lg image-control"
@@ -215,21 +212,20 @@ export default function Page() {
                 >
                   +
                 </button>
-                  <button 
-                className="w-6 h-6 bg-white bg-opacity-70 rounded-md flex items-center justify-center text-red-600 text-lg image-control"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setFrames(prev => prev.map((frame, idx) =>
-                    idx === i ? { ...frame, image: null } : frame
-                  ));
-                }}
-                title="Remove image"
-              >
-                ×
-              </button>
-                            </div>
+                <button 
+                  className="w-6 h-6 bg-white bg-opacity-70 rounded-md flex items-center justify-center text-red-600 text-lg image-control"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setFrames(prev => prev.map((frame, idx) =>
+                      idx === i ? { ...frame, image: null } : frame
+                    ));
+                  }}
+                  title="Remove image"
+                >
+                  ×
+                </button>
+              </div>
               
-              {/* Oval toggle button */}
               <button
                 className="absolute top-2 right-2 w-6 h-6 bg-white bg-opacity-70 rounded-md flex items-center justify-center text-black image-control opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                 onClick={(e) => toggleOvalShape(i, e)}
@@ -242,7 +238,6 @@ export default function Page() {
             </div>
           )}
 
-          {/* Frame decoration */}
           <img
             src={`/assets/frame${i + 1}.png`}
             alt={`Frame ${i + 1}`}
@@ -250,7 +245,6 @@ export default function Page() {
             draggable={false}
           />
 
-          {/* Upload input (hidden) */}
           <input
             type="file"
             accept="image/*"
@@ -261,7 +255,6 @@ export default function Page() {
             }
           />
           
-          {/* Label that triggers the input */}
           {!frame.image ? (
             <label
               htmlFor={`upload-${i}`}
@@ -284,11 +277,15 @@ export default function Page() {
     </div>
   );
 }
+*/
 
-// import dynamic from "next/dynamic";
-
-// const FrameCanvas = dynamic(() => import("@/components/FrameCanvas"), { ssr: false });
-
-// export default function Page() {
-//   return <FrameCanvas />;
-// }
+export default function MemoryWallDisabledPage() {
+  return (
+    <main className="min-h-screen w-screen bg-black flex flex-col items-center justify-center text-white text-center p-6 font-sans">
+      <h1 className="text-3xl font-bold mb-4 text-purple-400">Memory Wall</h1>
+      <p className="text-white/60 max-w-md mb-6">
+        The Memory Wall feature is currently paused. Press <kbd className="bg-white/20 px-2 py-1 rounded text-white font-mono">Esc</kbd> to return Home.
+      </p>
+    </main>
+  );
+}

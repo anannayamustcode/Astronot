@@ -4,6 +4,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stars } from "@react-three/drei";
 import { Suspense, useRef, useState } from "react";
 import { useRouter } from "next/navigation"; // Import the router
+import * as THREE from "three";
 
 export default function Home() {
   const [spin, setSpin] = useState(false);

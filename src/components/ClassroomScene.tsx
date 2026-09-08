@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Text, Float, Html, Stars } from '@react-three/drei';
 import * as THREE from 'three';
@@ -91,7 +91,7 @@ export default function ClassroomScene({ onEnterCave, onSubmitPoem }: {
     anchorX="center"
     anchorY="middle"
   >
-    "We don't read and write poetry because it's cute. We read and write poetry because we are members of the human race."
+    {"\"We don't read and write poetry because it's cute. We read and write poetry because we are members of the human race.\""}
   </Text>
 </mesh>
 

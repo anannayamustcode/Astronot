@@ -1,10 +1,14 @@
+import { FrameData } from "./useFrameStore";
+
 type Props = {
   index: number;
-  setFrames: React.Dispatch<React.SetStateAction<any[]>>;
-  image: string | null;
+  setFrames: React.Dispatch<React.SetStateAction<FrameData[]>>;
+  data?: FrameData;
+  image?: string | null;
 };
 
-export default function ImageUploaderWithControls({ index, setFrames, image }: Props) {
+export default function ImageUploaderWithControls({ index, setFrames, data, image: imageProp }: Props) {
+  const image = imageProp ?? data?.image ?? null;
   const handleImageUpload = (file: File) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -25,7 +29,7 @@ export default function ImageUploaderWithControls({ index, setFrames, image }: P
     reader.readAsDataURL(file);
   };
 
-  const update = (cb: (frame: any) => any) => {
+  const update = (cb: (frame: FrameData) => FrameData) => {
     setFrames(prev => prev.map((f, i) => (i === index ? cb(f) : f)));
   };
 

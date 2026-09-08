@@ -29,8 +29,10 @@ export function useFrameStore() {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          const updated = parsed.map((frame: any) => ({
-            ...frame,
+          const updated = parsed.map((frame: Partial<FrameData>) => ({
+            x: frame.x ?? 100,
+            y: frame.y ?? 100,
+            image: frame.image ?? null,
             imagePosition: frame.imagePosition || { x: 0, y: 0 },
             zoom: frame.zoom || 1,
             isOval: frame.isOval || false

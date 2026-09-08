@@ -1,6 +1,8 @@
+import { FrameData } from "./useFrameStore";
+
 type Props = {
   index: number;
-  setFrames: React.Dispatch<React.SetStateAction<any[]>>;
+  setFrames: React.Dispatch<React.SetStateAction<FrameData[]>>;
   image: string | null;
 };
 
