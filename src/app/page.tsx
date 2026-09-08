@@ -35,7 +35,7 @@ export default function Home() {
                 setTransitioning(true);
                 // Navigate to new page after animation completes
                 setTimeout(() => {
-                  router.push('/destination');
+                  router.push('/fire');
                 }, 1000); // Adjust timing to match your fade-out animation
               }, 2000);
             }}
@@ -55,7 +55,7 @@ export default function Home() {
   <>
     {/* Glow behind menu */}
     <div className="golden-dust" />
-    <div className="absolute top-[-140%] left-1/2 transform -translate-x-1/2 space-y-2 text-center z-10">
+    <div className="absolute top-[-85%] left-1/2 transform -translate-x-1/2 space-y-2 text-center z-10">
 
       <p
         className="text-white font-bold text-x floating-text cursor-pointer"
@@ -63,12 +63,12 @@ export default function Home() {
       >
         Bonfire
       </p>
-      <p
+      {/* <p
         className="text-white font-bold text-x floating-text cursor-pointer"
         onClick={() => router.push("/stargazing")}
       >
       Memory wall
-      </p>
+      </p> */}
       <p
         className="text-white font-bold text-x floating-text cursor-pointer"
         onClick={() => router.push("/destination")}
